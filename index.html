@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <title>DABAB Coffee &amp; Bakery Menu</title>
+    <meta name="description" content="منيو ضباب للقهوة والمخبوزات — أبها، المملكة العربية السعودية" />
+    <meta name="robots" content="index, follow" />
+    <meta property="og:title" content="DABAB Coffee &amp; Bakery Menu" />
+    <meta property="og:description" content="منيو ضباب للقهوة والمخبوزات — أبها، المملكة العربية السعودية" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="DABAB Coffee &amp; Bakery Menu" />
+    <meta name="twitter:description" content="منيو ضباب للقهوة والمخبوزات — أبها، المملكة العربية السعودية" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <script data-dabab-static-shim="1">
+(function () {
+  // This script runs while the document is still parsing, so the bundle's
+  // <script> tag does not exist yet. Resolve the base path lazily on the first
+  // API call instead, by which time the DOM is complete. Plain string maths,
+  // no regex - escaping regex slashes through this generator broke v1.
+  var _base = null;
+  function getBase() {
+    if (_base !== null) return _base;
+    _base = "/";
+    var s = document.querySelector('script[src*="assets/index-"]');
+    if (s) {
+      var src = s.getAttribute("src") || "";
+      var cut = src.lastIndexOf("assets/");
+      if (cut !== -1 && cut !== 0) _base = src.slice(0, cut);
+    }
+    return _base;
+  }
+
+  var FILES = {
+    "/api/menu": "menu",
+    "/api/gallery": "gallery",
+    "/api/catering-products": "catering-products"
+  };
+
+  function json(body, status) {
+    return new Response(JSON.stringify(body), {
+      status: status || 200,
+      headers: { "content-type": "application/json" }
+    });
+  }
+
+  var realFetch = window.fetch.bind(window);
+
+  window.fetch = function (input, init) {
+    var url = typeof input === "string" ? input
+            : (input && input.url) ? input.url : String(input);
+    var method = ((init && init.method) || (input && input.method) || "GET").toUpperCase();
+
+    // The URL parser handles absolute and relative alike - no regex needed.
+    var pathOnly;
+    try { pathOnly = new URL(url, location.href).pathname; }
+    catch (e) { pathOnly = String(url).split("?")[0]; }
+    if (pathOnly.indexOf("/api/") !== 0) return realFetch(input, init);
+
+    // Read-only mirror: the admin panel has no server to talk to.
+    if (method !== "GET") {
+      return Promise.resolve(json(
+        { message: "\u0647\u0630\u0647 \u0646\u0633\u062e\u0629 \u0644\u0644\u0639\u0631\u0636 \u0641\u0642\u0637" }, 503));
+    }
+
+    var name = FILES[pathOnly];
+    if (name) {
+      return realFetch(getBase() + "data/" + name + ".json", { cache: "no-cache" })
+        .then(function (r) {
+          if (!r.ok) throw new Error("static data missing: " + name);
+          return r.text();
+        })
+        .then(function (t) {
+          return new Response(t, {
+            status: 200,
+            headers: { "content-type": "application/json" }
+          });
+        });
+    }
+
+    // Anything else (admin session checks, uploads) is simply not available.
+    if (pathOnly.indexOf("/api/admin/") === 0) return Promise.resolve(json({ message: "unauthenticated" }, 401));
+    return Promise.resolve(json({ message: "not available in the static build" }, 503));
+  };
+})();
+</script>
+    <script type="module" crossorigin src="/assets/index-BIQ7XU_E.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-CKqoZluh.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
